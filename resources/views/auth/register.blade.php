@@ -312,7 +312,6 @@
 
             <button type="submit" class="btn-register">Daftar Sekarang</button>
         </form>
-
         <p class="login-link">
             Sudah punya akun? <a href="{{ route('login') }}">Login di sini</a>
         </p>

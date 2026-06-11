@@ -38,7 +38,7 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect()->route('login');
+        return redirect()->route('register');
     }
 
     public function showRegister()
@@ -62,13 +62,18 @@ class AuthController extends Controller
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
-        User::create([
+        $role = User::count() === 0 ? 'admin' : 'user';
+
+        $user = User::create([
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
+            'role'     => $role,
         ]);
 
-        return redirect()->route('login')
-            ->with('success', 'Akun berhasil dibuat! Silakan login.');
+        Auth::login($user);
+
+        return redirect()->route('dashboard')
+            ->with('success', 'Akun berhasil dibuat!');
     }
 }
