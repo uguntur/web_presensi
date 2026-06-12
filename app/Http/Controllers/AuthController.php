@@ -49,20 +49,36 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255|min:2',
-            'email'    => 'required|string|email|max:255|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
+            'name'       => 'required|string|max:255|min:2|unique:users,name',
+            'email'      => 'required|string|email|max:255|unique:users,email',
+            'password'   => 'required|string|min:8|confirmed',
+            'role'       => 'required|string|in:user,admin',
+            'admin_code' => 'nullable|string',
         ], [
-            'name.required'      => 'Nama lengkap wajib diisi.',
-            'email.required'     => 'Email wajib diisi.',
-            'email.email'        => 'Format email tidak valid.',
-            'email.unique'       => 'Email sudah terdaftar.',
-            'password.required'  => 'Password wajib diisi.',
-            'password.min'       => 'Password minimal 8 karakter.',
-            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'name.required'           => 'Nama lengkap wajib diisi.',
+            'name.unique'             => 'Pengguna sudah terdaftar. Silakan gunakan nama atau email lain.',
+            'email.required'          => 'Email wajib diisi.',
+            'email.email'             => 'Format email tidak valid.',
+            'email.unique'            => 'Pengguna sudah terdaftar. Silakan gunakan nama atau email lain.',
+            'password.required'       => 'Password wajib diisi.',
+            'password.min'            => 'Password minimal 8 karakter.',
+            'password.confirmed'      => 'Konfirmasi password tidak cocok.',
+            'role.required'           => 'Tipe akun wajib dipilih.',
+            'role.in'                 => 'Tipe akun tidak valid.',
+            'admin_code.string'       => 'Kode admin harus berupa teks.',
         ]);
 
-        $role = User::count() === 0 ? 'admin' : 'user';
+        $role = $request->input('role') === 'admin' ? 'admin' : 'user';
+
+        if ($role === 'admin') {
+            $adminCode = env('ADMIN_REGISTRATION_CODE', 'ADMIN123');
+
+            if ($request->input('admin_code') !== $adminCode) {
+                return back()
+                    ->withInput($request->only('name', 'email', 'role'))
+                    ->withErrors(['admin_code' => 'Kode admin tidak valid.']);
+            }
+        }
 
         $user = User::create([
             'name'     => $request->name,
@@ -71,9 +87,7 @@ class AuthController extends Controller
             'role'     => $role,
         ]);
 
-        Auth::login($user);
-
-        return redirect()->route('dashboard')
-            ->with('success', 'Akun berhasil dibuat!');
+        return redirect()->route('login')
+            ->with('success', 'Akun Anda berhasil dibuat. Silakan masuk menggunakan akun Anda.');
     }
 }
