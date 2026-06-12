@@ -91,9 +91,10 @@
             color: #555;
             margin-bottom: 5px;
         }
-        .input-group input {
+        .input-group input,
+        .input-group select {
             width: 100%;
-            padding: 11px 44px 11px 16px;
+            padding: 11px 16px;
             border: 1.5px solid #d0d8f0;
             border-radius: 8px;
             font-size: 14px;
@@ -103,7 +104,8 @@
             outline: none;
             transition: border-color 0.2s;
         }
-        .input-group input:focus { border-color: #1565C0; }
+        .input-group input:focus,
+        .input-group select:focus { border-color: #1565C0; }
         .input-group input::placeholder { color: #aab; }
         .input-group input.is-invalid { border-color: #e74c3c; }
         .input-icon {
@@ -278,6 +280,39 @@
                 @enderror
             </div>
 
+            <!-- Account Type -->
+            <div class="input-group">
+                <label for="role">Tipe Akun</label>
+                <select id="role" name="role" required class="{{ $errors->has('role') ? 'is-invalid' : '' }}">
+                    <option value="user" {{ old('role') === 'admin' ? '' : 'selected' }}>User</option>
+                    <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                </select>
+                @error('role')
+                    <div class="field-error">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="input-group admin-code-group" style="display: {{ old('role') === 'admin' ? 'block' : 'none' }};">
+                <label for="admin_code">Kode Admin</label>
+                <input
+                    type="password"
+                    id="admin_code"
+                    name="admin_code"
+                    placeholder="Masukkan kode admin"
+                    value="{{ old('admin_code') }}"
+                    autocomplete="new-password"
+                    class="{{ $errors->has('admin_code') ? 'is-invalid' : '' }}"
+                >
+                <span class="input-icon">&#128273;</span>
+                @error('admin_code')
+                    <div class="field-error">{{ $message }}</div>
+                @enderror
+            </div>
+
+            <div class="field-error" style="font-size:13px;margin-bottom:12px;color:#555;">
+            
+            </div>
+
             <!-- Password -->
             <div class="input-group">
                 <label for="password">Password</label>
@@ -318,6 +353,18 @@
     </div>
 
     <p class="footer-text">Team Fire · Kelompok 11 · Sistem Presensi</p>
+
+    <script>
+        const roleSelect = document.getElementById('role');
+        const adminGroup = document.querySelector('.admin-code-group');
+
+        function toggleAdminCode() {
+            adminGroup.style.display = roleSelect.value === 'admin' ? 'block' : 'none';
+        }
+
+        roleSelect.addEventListener('change', toggleAdminCode);
+        toggleAdminCode();
+    </script>
 
     <!-- Decorative flames -->
     <div class="flames-bar">
