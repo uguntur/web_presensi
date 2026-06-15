@@ -17,6 +17,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/user', [DashboardController::class, 'user'])->name('dashboard.user');
     Route::post('/dashboard/admin/course', [DashboardController::class, 'storeCourse'])->name('dashboard.admin.course.store');
     Route::post('/dashboard/admin/attendance/{id}/update', [DashboardController::class, 'updateAttendance'])->name('dashboard.admin.attendance.update');
+    Route::post('/dashboard/admin/attendance/{id}/delete', [DashboardController::class, 'deleteAttendance'])->name('dashboard.admin.attendance.delete');
     Route::post('/dashboard/admin/phone', [DashboardController::class, 'updatePhone'])->name('dashboard.admin.phone.update');
     Route::post('/attendance', [App\Http\Controllers\AttendanceController::class, 'store'])->name('attendance.store');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

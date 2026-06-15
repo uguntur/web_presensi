@@ -13,10 +13,16 @@ class Course extends Model
         'code',
         'name',
         'class',
+        'admin_id',
     ];
 
     public function attendances()
     {
         return $this->hasMany(Attendance::class);
+    }
+
+    public function admin()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'admin_id');
     }
 }
