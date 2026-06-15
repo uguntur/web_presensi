@@ -101,31 +101,16 @@
 
         <div class="stats">
             <div class="stat-block">
-                <strong>100+</strong>
+                <strong>{{ $userCount }}</strong>
                 Pengguna terdaftar
             </div>
             <div class="stat-block">
-                <strong>28</strong>
+                <strong>{{ $todayAttendanceCount }}</strong>
                 Presensi hari ini
             </div>
             <div class="stat-block">
-                <strong>5</strong>
-                Notifikasi belum dibaca
-            </div>
-        </div>
-
-        <div class="card-grid">
-            <div class="card">
-                <h2>Kelola Pengguna</h2>
-                <p>Tambahkan, edit, atau hapus akun pengguna. Semuanya bisa dikendalikan dari sini.</p>
-            </div>
-            <div class="card">
-                <h2>Laporan Presensi</h2>
-                <p>Lihat ringkasan kehadiran, statistik harian, dan rekap per kelas.</p>
-            </div>
-            <div class="card">
-                <h2>Pengaturan Sistem</h2>
-                <p>Atur peran, hak akses, jadwal, dan aturan presensi untuk seluruh pengguna.</p>
+                <strong>{{ $courses->count() }}</strong>
+                Mata kuliah terdaftar
             </div>
         </div>
 
@@ -151,22 +136,20 @@
                     </div>
                     <button type="submit" style="background:#1e3a8a;color:#fff;padding:10px 12px;border-radius:10px;border:none;font-weight:600;">Tambah Mata Kuliah</button>
                 </form>
-
-                <hr style="border-top:1px solid #eef2ff;margin:14px 0">
-
-                <h3>Nomor Telepon Admin</h3>
-                <form action="{{ route('dashboard.admin.phone.update') }}" method="POST">
-                    @csrf
-                    <div style="margin-bottom:10px;">
-                        <label style="display:block;font-weight:600;margin-bottom:6px;color:#334155">Telepon</label>
-                        <input name="phone" value="{{ old('phone', $user->phone ?? '') }}" placeholder="0812xxxx" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:10px;">
-                    </div>
-                    <button type="submit" style="background:#16a34a;color:#fff;padding:10px 12px;border-radius:10px;border:none;font-weight:600;">Simpan Nomor</button>
-                </form>
             </div>
 
             <div class="panel">
                 <h3>Daftar Presensi Terbaru</h3>
+                <form method="GET" action="{{ route('dashboard.admin') }}" style="margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                    <label style="font-weight:600;color:#334155">Filter Mata Kuliah</label>
+                    <select name="course_id" style="padding:10px;border-radius:10px;border:1px solid #e2e8f0;">
+                        <option value="">Semua Mata Kuliah</option>
+                        @foreach($courses as $course)
+                            <option value="{{ $course->id }}" {{ $selectedCourseId == $course->id ? 'selected' : '' }}>{{ $course->code ? $course->code . ' - ' : '' }}{{ $course->name }}{{ $course->class ? ' (' . $course->class . ')' : '' }}</option>
+                        @endforeach
+                    </select>
+                    <button type="submit" style="background:#1e40af;color:#fff;padding:10px 14px;border-radius:10px;border:none;font-weight:600;">Terapkan</button>
+                </form>
                 <table style="width:100%;border-collapse:collapse;font-size:14px;color:#334155">
                     <thead>
                         <tr style="text-align:left;border-bottom:1px solid #e6eefb">
@@ -186,8 +169,8 @@
                                 <td style="padding:10px;vertical-align:top">{{ $a->course->name ?? '-' }} <br><small style="color:#64748b">{{ $a->course->code ?? '' }}</small></td>
                                 <td style="padding:10px;vertical-align:top">{{ $a->created_at->format('Y-m-d H:i') }}</td>
                                 <td style="padding:10px;vertical-align:top">{{ $a->status ?? ($a->type ?? '') }}</td>
-                                <td style="padding:10px;vertical-align:top">
-                                    <form action="{{ route('dashboard.admin.attendance.update', $a->id) }}" method="POST" style="display:flex;gap:8px;align-items:center">
+                                <td style="padding:10px;vertical-align:top;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                                    <form action="{{ route('dashboard.admin.attendance.update', $a->id) }}" method="POST" style="display:flex;gap:8px;align-items:center;">
                                         @csrf
                                         <select name="status" style="padding:8px;border-radius:8px;border:1px solid #e2e8f0">
                                             <option value="hadir" {{ ($a->status=='hadir')? 'selected':'' }}>Hadir</option>
@@ -195,6 +178,10 @@
                                             <option value="sakit" {{ ($a->status=='sakit')? 'selected':'' }}>Sakit</option>
                                         </select>
                                         <button type="submit" style="background:#2563eb;color:#fff;padding:8px 10px;border-radius:8px;border:none;font-weight:600;">Simpan</button>
+                                    </form>
+                                    <form action="{{ route('dashboard.admin.attendance.delete', $a->id) }}" method="POST" onsubmit="return confirm('Hapus presensi ini?');">
+                                        @csrf
+                                        <button type="submit" style="background:#dc2626;color:#fff;padding:8px 10px;border-radius:8px;border:none;font-weight:600;">Hapus</button>
                                     </form>
                                 </td>
                             </tr>

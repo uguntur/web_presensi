@@ -112,12 +112,20 @@
             <form action="{{ route('attendance.store') }}" method="POST">
                 @csrf
                 <div style="max-width:320px;margin:8px auto 0;text-align:left;">
-                    <label style="display:block;font-size:13px;color:#475569;margin-bottom:6px;font-weight:600">Pilih Mata Kuliah (opsional)</label>
-                    <select name="course_id" style="width:100%;padding:10px;border-radius:8px;border:1px solid #d0d8f0;background:#fff">
+                    <label style="display:block;font-size:13px;color:#475569;margin-bottom:6px;font-weight:600">Pilih Mata Kuliah</label>
+                    <select name="course_id" required style="width:100%;padding:10px;border-radius:8px;border:1px solid #d0d8f0;background:#fff">
                         <option value="">-- Pilih Mata Kuliah --</option>
                         @foreach($courses as $c)
-                            <option value="{{ $c->id }}">{{ $c->code ? $c->code . ' - ' : '' }}{{ $c->name }} {{ $c->class ? '(' . $c->class . ')' : '' }}</option>
+                            <option value="{{ $c->id }}" {{ $selectedCourseId == $c->id ? 'selected' : '' }}>{{ $c->code ? $c->code . ' - ' : '' }}{{ $c->name }} {{ $c->class ? '(' . $c->class . ')' : '' }}</option>
                         @endforeach
+                    </select>
+                </div>
+                <div style="max-width:320px;margin:12px auto 0;text-align:left;">
+                    <label style="display:block;font-size:13px;color:#475569;margin-bottom:6px;font-weight:600">Status Kehadiran</label>
+                    <select name="status" required style="width:100%;padding:10px;border-radius:8px;border:1px solid #d0d8f0;background:#fff">
+                        <option value="hadir">Hadir</option>
+                        <option value="izin">Izin</option>
+                        <option value="sakit">Sakit</option>
                     </select>
                 </div>
                 <button type="submit" class="btn-register" style="max-width:260px;margin:12px auto 0;">Presensi Sekarang</button>
@@ -130,15 +138,41 @@
             @endif
         </div>
 
-        <div class="schedule">
-            <div class="card">
-                <h3>Presensi Terakhir</h3>
-                <p>Data presensi ditampilkan di sini setelah fitur presensi aktif. Saat ini ini adalah tampilan awal pengguna.</p>
-            </div>
-            <div class="card">
-                <h3>Headline Aktivitas</h3>
-                <p>Lihat instruksi terbaru, pengumuman kelas, dan status kehadiran Anda.</p>
-            </div>
+        <div class="card" style="margin-bottom:18px;">
+            <h3>Riwayat Presensi {{ $selectedCourseId ? ' (' . optional($courses->firstWhere('id', $selectedCourseId))->name . ')' : '' }}</h3>
+            <form method="GET" action="{{ route('dashboard.user') }}" style="margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+                <label style="font-weight:600;color:#334155">Tampilkan matkul</label>
+                <select name="course_id" style="padding:10px;border-radius:10px;border:1px solid #e2e8f0;min-width:220px;">
+                    <option value="">Semua Mata Kuliah</option>
+                    @foreach($courses as $course)
+                        <option value="{{ $course->id }}" {{ $selectedCourseId == $course->id ? 'selected' : '' }}>{{ $course->code ? $course->code . ' - ' : '' }}{{ $course->name }}{{ $course->class ? ' (' . $course->class . ')' : '' }}</option>
+                    @endforeach
+                </select>
+                <button type="submit" style="background:#1e40af;color:#fff;padding:10px 14px;border-radius:10px;border:none;font-weight:600;">Tampilkan</button>
+            </form>
+            <table style="width:100%;border-collapse:collapse;font-size:14px;color:#334155">
+                <thead>
+                    <tr style="text-align:left;border-bottom:1px solid #e6eefb">
+                        <th style="padding:10px">No</th>
+                        <th style="padding:10px">Mata Kuliah</th>
+                        <th style="padding:10px">Tanggal</th>
+                        <th style="padding:10px">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($userAttendances as $i => $attendance)
+                        <tr style="border-bottom:1px solid #f1f5fb">
+                            <td style="padding:10px;vertical-align:top">{{ $i+1 }}</td>
+                            <td style="padding:10px;vertical-align:top">{{ $attendance->course->name ?? '-' }}<br><small style="color:#64748b">{{ $attendance->course->code ?? '' }}</small></td>
+                            <td style="padding:10px;vertical-align:top">{{ $attendance->created_at->format('Y-m-d H:i') }}</td>
+                            <td style="padding:10px;vertical-align:top">{{ ucfirst($attendance->status ?? $attendance->type) }}</td>
+                        </tr>
+                    @endforeach
+                    @if($userAttendances->isEmpty())
+                        <tr><td colspan="4" style="padding:12px;color:#64748b">Belum ada presensi.</td></tr>
+                    @endif
+                </tbody>
+            </table>
         </div>
     </div>
 </body>

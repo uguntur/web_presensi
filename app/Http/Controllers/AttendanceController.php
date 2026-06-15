@@ -17,26 +17,29 @@ class AttendanceController extends Controller
         }
 
         $request->validate([
-            'course_id' => 'nullable|exists:courses,id',
+            'course_id' => 'required|exists:courses,id',
+            'status' => 'required|string|in:hadir,izin,sakit',
         ]);
 
-        // check already attended today
+        $courseId = $request->input('course_id');
+
         $exists = Attendance::where('user_id', $user->id)
+            ->where('course_id', $courseId)
             ->whereDate('created_at', Carbon::today())
             ->exists();
 
         if ($exists) {
-            return back()->with('error', 'Anda sudah melakukan presensi hari ini.');
+            return back()->with('error', 'Anda sudah melakukan presensi untuk matkul ini hari ini.');
         }
 
         Attendance::create([
             'user_id' => $user->id,
             'type' => 'in',
-            'status' => 'hadir',
-            'course_id' => $request->input('course_id'),
+            'status' => $request->input('status'),
+            'course_id' => $courseId,
             'metadata' => null,
         ]);
 
-        return back()->with('success', 'Presensi berhasil dicatat.');
+        return redirect()->route('dashboard.user', ['course_id' => $courseId])->with('success', 'Presensi berhasil dicatat.');
     }
 }
